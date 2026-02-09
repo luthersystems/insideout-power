@@ -1,7 +1,7 @@
 ---
 name: "insideout"
-displayName: "InsideOut Cloud Infrastructure"
-description: "Design, price, and deploy production-ready AWS and GCP infrastructure through conversational AI — generates Terraform and deploys with one command"
+displayName: "InsideOut Agentic Infrastructure Builder & Manager"
+description: "Agentic Cloud infrastructure builder & manager, describe your goal, discuss requirements, estimate cost, generate Terraform, deploy, operate and manage in production."
 keywords: ["infrastructure", "cloud", "aws", "gcp", "terraform", "deployment", "devops", "database", "kubernetes", "serverless", "vpc", "networking", "docker", "containers", "ecs", "eks", "rds", "s3", "lambda", "compute", "iac"]
 author: "Luther Systems"
 ---
