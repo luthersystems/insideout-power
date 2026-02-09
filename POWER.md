@@ -42,7 +42,24 @@ InsideOut uses a multi-turn conversational approach:
 
 **CRITICAL: Do not answer Riley's questions on behalf of the user.** Riley asks about the user's application, scale requirements, security needs, and preferences. These questions MUST be shown to the user for them to answer. Pass the user's responses to `convoreply`.
 
-**CRITICAL: Always route user messages to `convoreply` during an active session.** Once a session is open (you have a `session_id`), every user message that is a response to Riley MUST be sent to `convoreply` — including short replies like "yes", "continue", "looks good", "let's proceed", etc. **Never** just acknowledge the user's message with "Understood" or similar. If the user is responding to something Riley said, call `convoreply` with the user's message immediately. The only exceptions are when the user is explicitly asking to generate Terraform (`tfgenerate`), deploy (`tfdeploy`), check status (`convostatus`/`tfstatus`), or asking you (the IDE agent) a question that is not directed at Riley.
+**CRITICAL: Always route user messages to `convoreply` during an active session.** Once a session is open (you have a `session_id`), every user message that is a response to Riley MUST be sent to `convoreply` — including short replies like "yes", "continue", "looks good", "let's proceed", "cost estimate please", etc. **Never** just acknowledge the user's message with "Understood" or similar. If the user is responding to something Riley said, call `convoreply` with the user's message immediately. The only exceptions are when the user is explicitly asking to generate Terraform (`tfgenerate`), deploy (`tfdeploy`), check status (`convostatus`/`tfstatus`), or asking you (the IDE agent) a question that is not directed at Riley.
+
+**Example — DO NOT do this:**
+```
+Riley: "Any questions or tweaks to these config details? Or ready for the cost estimate?"
+User: "Cost estimate please"
+Agent: "Understood."                    ← WRONG. This just acknowledges the message.
+```
+
+**Correct behavior:**
+```
+Riley: "Any questions or tweaks to these config details? Or ready for the cost estimate?"
+User: "Cost estimate please"
+Agent calls: convoreply(message="Cost estimate please")   ← RIGHT. Route to Riley.
+→ Riley responds with the cost estimate.
+```
+
+If Riley asked a question and the user answered it, **always** call `convoreply`. No exceptions.
 
 ## Step 4: Enrich the first reply with workspace context
 
