@@ -171,6 +171,8 @@ Once you're comfortable with the basic workflow:
    → Riley: "Hi! What are you building?"
 
 2. convoreply: "A web app with 1000 users, needs database and file storage"
+   # Workspace context (language, framework, existing infra) is auto-appended
+   # to this first reply — Riley sees it immediately without extra questions
    → Riley: "Great! I recommend ECS + RDS + S3. What's your preferred region?"
 
 3. convoreply: "us-east-1"
