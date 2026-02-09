@@ -42,24 +42,49 @@ InsideOut uses a multi-turn conversational approach:
 
 **CRITICAL: Do not answer Riley's questions on behalf of the user.** Riley asks about the user's application, scale requirements, security needs, and preferences. These questions MUST be shown to the user for them to answer. Pass the user's responses to `convoreply`.
 
-**CRITICAL: Always route user messages to `convoreply` during an active session.** Once a session is open (you have a `session_id`), every user message that is a response to Riley MUST be sent to `convoreply` — including short replies like "yes", "continue", "looks good", "let's proceed", "cost estimate please", etc. **Never** just acknowledge the user's message with "Understood" or similar. If the user is responding to something Riley said, call `convoreply` with the user's message immediately. The only exceptions are when the user is explicitly asking to generate Terraform (`tfgenerate`), deploy (`tfdeploy`), check status (`convostatus`/`tfstatus`), or asking you (the IDE agent) a question that is not directed at Riley.
+**CRITICAL: Always take action — never just say "Understood."** Once a session is open (you have a `session_id`), every user message MUST result in a tool call. **Never** respond with only "Understood", "Got it", "OK", or any other acknowledgement without calling a tool. Apply this decision tree:
 
-**Example — DO NOT do this:**
+1. **Is the user responding to something Riley said?** (e.g., answering a question, saying "yes", "continue", "looks good", "cost estimate please") → Call `convoreply` with the user's message.
+2. **Is the user asking to generate Terraform?** (e.g., "generate terraform", "let's get the terraform", "proceed to terraform") → Call `tfgenerate`.
+3. **Is the user asking to deploy?** → Call `tfdeploy`.
+4. **Is the user asking for status?** → Call `convostatus`, `tfstatus`, or `tflogs`.
+5. **Is the user asking you (the IDE agent) a direct question not meant for Riley?** → Answer it yourself.
+6. **Not sure?** → Default to `convoreply`. When in doubt, always route to Riley.
+
+**Example 1 — DO NOT do this:**
 ```
-Riley: "Any questions or tweaks to these config details? Or ready for the cost estimate?"
+Riley: "Any questions or tweaks? Or ready for the cost estimate?"
 User: "Cost estimate please"
-Agent: "Understood."                    ← WRONG. This just acknowledges the message.
+Agent: "Understood."                    ← WRONG. Must call convoreply.
 ```
 
-**Correct behavior:**
+**Correct:**
 ```
-Riley: "Any questions or tweaks to these config details? Or ready for the cost estimate?"
+Riley: "Any questions or tweaks? Or ready for the cost estimate?"
 User: "Cost estimate please"
-Agent calls: convoreply(message="Cost estimate please")   ← RIGHT. Route to Riley.
+Agent calls: convoreply(message="Cost estimate please")   ← RIGHT.
 → Riley responds with the cost estimate.
 ```
 
-If Riley asked a question and the user answered it, **always** call `convoreply`. No exceptions.
+**Example 2 — DO NOT do this:**
+```
+Riley: "Ready to proceed to the Terraform files?"
+User: "Let's proceed with terraform please"
+Agent: "Understood."                    ← WRONG. Must call a tool.
+User: "Continue on to generate the terraform"
+Agent: "Understood."                    ← WRONG again. Still no tool call.
+```
+
+**Correct:**
+```
+Riley: "Ready to proceed to the Terraform files?"
+User: "Let's proceed with terraform please"
+Agent calls: convoreply(message="Let's proceed with terraform please")   ← RIGHT.
+→ Riley confirms and signals [TERRAFORM_READY: true].
+Agent calls: tfgenerate                 ← RIGHT. Now generate.
+```
+
+**The rule is simple: every user message during an active session must produce a tool call. If you are unsure which tool, use `convoreply`.**
 
 ## Step 4: Enrich the first reply with workspace context
 
