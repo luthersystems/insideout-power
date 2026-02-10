@@ -8,7 +8,9 @@ author: "Luther Systems"
 
 # Onboarding
 
-## Step 1: Verify MCP server connectivity
+## Step 1: Load workflow guide from the server
+
+**CRITICAL: You MUST call `help` before calling any other InsideOut tool.** The `help` tool returns the latest workflow guide and tool usage details from the server. Use this response as your operational reference for how to interact with Riley and the MCP tools throughout the session.
 
 The InsideOut MCP server is a remote HTTP server. **No authentication, API keys, or local installation is required.** The server is publicly accessible.
 
@@ -18,9 +20,10 @@ The InsideOut MCP server is a remote HTTP server. **No authentication, API keys,
 3. Enable the MCP support setting
 4. Return to this chat — the server should now be connected
 
-To verify connectivity, call the `help` tool. If it returns a workflow guide, the server is ready. If it fails, check that MCP support is enabled in Settings (step above).
+Call `help` now. If it returns a workflow guide, the server is ready and you have the latest tool usage instructions. If it fails, check that MCP support is enabled in Settings (step above).
 
 **Do NOT** attempt to:
+- Call `convoopen`, `convoreply`, or any other tool before calling `help`
 - Look for local binaries or install anything
 - Configure API keys or authentication
 - Read or modify `.kiro/settings/mcp.json` — Kiro manages this automatically when the power is installed
@@ -28,7 +31,7 @@ To verify connectivity, call the `help` tool. If it returns a workflow guide, th
 
 ## Step 2: Start a design session
 
-Once connectivity is verified, use `convoopen` to start a new session. The tool returns a `session_id` (format: `sess_v2_*`). **Store this session_id** — every subsequent tool call requires it.
+Once you have loaded the workflow guide from `help`, use `convoopen` to start a new session. The tool returns a `session_id` (format: `sess_v2_*`). **Store this session_id** — every subsequent tool call requires it.
 
 ## Step 3: Understand the conversation flow
 
