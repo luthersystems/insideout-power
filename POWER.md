@@ -116,6 +116,27 @@ Before sending the **first** `convoreply` in a session, scan the user's workspac
 | `k8s/`, `kubernetes/`, `helm/` | Kubernetes usage |
 | `README.md` | Project description (first ~20 lines) |
 
+**Cloud provider detection:** In addition to the tech stack, look for signals that indicate which cloud provider the user is already targeting or deploying to. Report any matches as a **Target Cloud** line.
+
+| Signal | Indicates |
+|---|---|
+| `*.tf` files with `provider "aws"` or `aws_*` resources | AWS |
+| `*.tf` files with `provider "google"` or `google_*` resources | GCP |
+| `aws-sdk`, `@aws-sdk/*`, `boto3`, `aws-cdk-lib` in deps | AWS |
+| `@google-cloud/*`, `google-cloud-*` in deps | GCP |
+| `serverless.yml` with `provider.name: aws` | AWS |
+| `serverless.yml` with `provider.name: gcp` | GCP |
+| `cloudformation/`, `*.template.yaml`, `samconfig.toml`, `template.yaml` | AWS (CloudFormation/SAM) |
+| `app.yaml` with `runtime:` (App Engine) | GCP |
+| CI/CD workflows referencing `aws-actions/*`, `configure-aws-credentials` | AWS |
+| CI/CD workflows referencing `google-github-actions/*`, `auth` with `workload_identity_provider` | GCP |
+| `copilot/`, `appspec.yml` | AWS (Copilot/CodeDeploy) |
+| `cdk.json`, `cdk.context.json` | AWS (CDK) |
+| `.gcloudignore`, `gcloud` commands in scripts | GCP |
+| `pulumi/` with AWS or GCP references | AWS or GCP |
+
+If multiple providers are detected, list all of them. If none are detected, omit the Target Cloud line.
+
 **Format:** Append the summary to the user's message separated by `---`:
 
 ```
@@ -126,7 +147,8 @@ Before sending the **first** `convoreply` in a session, scan the user's workspac
 - Language/Runtime: Node.js 20, TypeScript
 - Framework: Next.js 14
 - Databases/Services: PostgreSQL (via prisma), Redis (via ioredis)
-- Infrastructure: Docker Compose, Terraform (AWS provider, ECS + RDS)
+- Target Cloud: AWS (Terraform provider, ECS + RDS resources, GitHub Actions with aws-actions/configure-aws-credentials)
+- Infrastructure: Docker Compose, Terraform
 - CI/CD: GitHub Actions
 ```
 
@@ -389,7 +411,7 @@ Riley will guide you through credential setup during the deployment phase.
 6. **Start with a simple stack** — you can always add components in a follow-up session
 7. **Check deployment logs** — `tflogs` shows exactly what Terraform is doing
 8. **Inspect after deployment** — `awsinspect`/`gcpinspect` confirms what was actually provisioned
-9. **Open your project first** — InsideOut auto-detects your tech stack from workspace files, giving Riley a head start on recommendations
+9. **Open your project first** — InsideOut auto-detects your tech stack and target cloud provider from workspace files, giving Riley a head start on recommendations
 
 ---
 
