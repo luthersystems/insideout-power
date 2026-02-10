@@ -54,6 +54,8 @@ InsideOut uses a multi-turn conversational approach:
 5. **Is the user asking you (the IDE agent) a direct question not meant for Riley?** → Answer it yourself.
 6. **Not sure?** → Default to `convoreply`. When in doubt, always route to Riley.
 
+**CRITICAL: Do not suggest spec sessions or other Kiro workflows during an InsideOut session.** Once an InsideOut session is active (you have a `session_id`), stay in the InsideOut conversation flow. Do not prompt the user to start a spec session, task session, or any other Kiro-managed workflow. The InsideOut power manages its own multi-turn workflow through the MCP tools — interrupting it with Kiro's built-in session types will break the conversation state.
+
 **Example 1 — DO NOT do this:**
 ```
 Riley: "Any questions or tweaks? Or ready for the cost estimate?"
