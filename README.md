@@ -166,7 +166,15 @@ The conversation flows through these agents automatically. From Kiro's perspecti
 ## Links
 
 - [InsideOut Platform](https://insideout.luthersystems.com)
+- [Demo Video](https://www.youtube.com/watch?v=wTEEYz0MIBE)
+- [Standalone Web App](https://insideout.luthersystemsapp.com/) — try InsideOut without Kiro
 - [Luther Systems](https://luthersystems.com)
 - [Kiro IDE](https://kiro.dev)
 - [Kiro Powers Documentation](https://kiro.dev/docs/powers/)
 - [MCP Protocol](https://modelcontextprotocol.io)
+
+## Community & Support
+
+- [Discord](https://insideout.luthersystems.com/discord) — chat with the devs and InsideOut users
+- [General Inquiry Call](https://enterprise.luthersystems.com/general-call) — talk with us
+- [Tech Call](https://insideout.luthersystems.com/tech-call) — talk with the devs
