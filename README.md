@@ -166,7 +166,7 @@ The conversation flows through these agents automatically. From Kiro's perspecti
 ## Links
 
 - [InsideOut Platform](https://insideout.luthersystems.com)
-- [Demo Video](https://www.youtube.com/watch?v=wTEEYz0MIBE)
+- [Demo Video](https://insideout.luthersystems.com/demo-video)
 - [Standalone Web App](https://insideout.luthersystemsapp.com/) — try InsideOut without Kiro
 - [Luther Systems](https://luthersystems.com)
 - [Kiro IDE](https://kiro.dev)
@@ -176,5 +176,5 @@ The conversation flows through these agents automatically. From Kiro's perspecti
 ## Community & Support
 
 - [Discord](https://insideout.luthersystems.com/discord) — chat with the devs and InsideOut users
-- [General Inquiry Call](https://enterprise.luthersystems.com/general-call) — talk with us
+- [General Inquiry Call](https://insideout.luthersystems.com/general-call) — talk with us
 - [Tech Call](https://insideout.luthersystems.com/tech-call) — talk with the devs
