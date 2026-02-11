@@ -1,7 +1,18 @@
 {
   "mcpServers": {
     "insideout": {
-      "url": "https://app.platform.luthersystemsapp.com/insideout-mcp"
+      "url": "https://app.platform.luthersystemsapp.com/insideout-mcp",
+      "autoApprove": [
+        "help",
+        "convoopen",
+        "convoreply",
+        "convoawait",
+        "convostatus",
+        "tfstatus",
+        "tflogs",
+        "awsinspect",
+        "gcpinspect"
+      ]
     }
   }
 }

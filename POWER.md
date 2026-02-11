@@ -29,11 +29,23 @@ Call `help` now. If it returns a workflow guide, the server is ready and you hav
 - Read or modify `.kiro/settings/mcp.json` — Kiro manages this automatically when the power is installed
 - Troubleshoot network or auth issues — the server is public and requires no credentials
 
-## Step 2: Start a design session
+## Step 2: Present InsideOut to the user and wait for their input
 
-Once you have loaded the workflow guide from `help`, use `convoopen` to start a new session. The tool returns a `session_id` (format: `sess_v2_*`). **Store this session_id** — every subsequent tool call requires it.
+After `help` succeeds, briefly explain to the user what InsideOut can do (conversational cloud infrastructure design, cost estimation, Terraform generation, and deployment for AWS and GCP). Then **STOP and wait for the user to respond**.
 
-## Step 3: Understand the conversation flow
+**CRITICAL: Do NOT call `convoopen` or any other tool until the user has described what they want to build or explicitly asked to start a session.** The user must initiate the design conversation — the agent should never start a demo, run example prompts, or call `convoopen` proactively.
+
+Do NOT:
+- Automatically start a design session
+- Run through example workflows or demo prompts
+- Call `convoopen` before the user has stated their requirements
+- Fabricate user messages to demonstrate the tool
+
+## Step 3: Start a design session
+
+When the user describes what they want to build (or says something like "let's start", "begin a session", etc.), call `convoopen` to create a new session. The tool returns a `session_id` (format: `sess_v2_*`). **Store this session_id** — every subsequent tool call requires it.
+
+## Step 4: Understand the conversation flow
 
 InsideOut uses a multi-turn conversational approach:
 
@@ -45,7 +57,7 @@ InsideOut uses a multi-turn conversational approach:
 
 **CRITICAL: Do not answer Riley's questions on behalf of the user.** Riley asks about the user's application, scale requirements, security needs, and preferences. These questions MUST be shown to the user for them to answer. Pass the user's responses to `convoreply`.
 
-**CRITICAL: Always take action — never just say "Understood."** Once a session is open (you have a `session_id`), every user message MUST result in a tool call. **Never** respond with only "Understood", "Got it", "OK", or any other acknowledgement without calling a tool. Apply this decision tree:
+**CRITICAL: Always take action — never just say "Understood."** Once a session is open (you have a `session_id`), every user message MUST result in a tool call. **Never** respond with only "Understood", "Got it", "OK", or any other acknowledgement without calling a tool. **This rule applies only after the user has initiated a session.** Before a session is open, present InsideOut's capabilities and wait for the user to say what they want to build. Apply this decision tree:
 
 1. **Is the user responding to something Riley said?** (e.g., answering a question, saying "yes", "continue", "looks good", "cost estimate please") → Call `convoreply` with the user's message.
 2. **Is the user asking to generate Terraform?** (e.g., "generate terraform", "let's get the terraform", "proceed to terraform") → Call `tfgenerate`.
@@ -91,9 +103,9 @@ Agent calls: tfgenerate                 ← RIGHT. Now generate.
 
 **The rule is simple: every user message during an active session must produce a tool call. If you are unsure which tool, use `convoreply`.**
 
-## Step 4: Pass workspace context via `project_context`
+## Step 5: Pass workspace context via `project_context`
 
-Before calling `convoopen`, scan the user's workspace for project files and build a project context string. Pass this as the `project_context` parameter on `convoopen` so Riley has immediate context about the user's existing tech stack and target cloud provider, reducing early back-and-forth.
+Before calling `convoopen`, scan the user's workspace for project files and build a project context string. Pass this as the `project_context` parameter on `convoopen` so Riley has immediate context about the user's existing tech stack and target cloud provider. **This context helps Riley give better guidance — it does NOT skip any design steps.** Riley will still ask her full set of questions about scale, security, compliance, regions, etc. The workspace context just helps her tailor those questions and recommendations to the user's actual stack.
 
 **Rules:**
 - Pass `project_context` on the **`convoopen`** call to give Riley context from the start
@@ -143,6 +155,7 @@ If multiple providers are detected, list all of them. If none are detected, omit
 **Format:** Build a concise string for the `project_context` parameter:
 
 ```
+IDE: Kiro
 Language/Runtime: Node.js 20, TypeScript
 Framework: Next.js 14
 Databases/Services: PostgreSQL (via prisma), Redis (via ioredis)
@@ -151,7 +164,7 @@ Infrastructure: Docker Compose, Terraform
 CI/CD: GitHub Actions
 ```
 
-Only include lines where something was detected. Omit empty categories.
+**Always include the IDE line** (Kiro). Only include other lines where something was detected. Omit empty categories.
 
 # Overview
 
@@ -178,7 +191,7 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 **Tools:**
 
 1. **convoopen** — Start a new infrastructure design session
-   - Optional: `project_context` (string) — auto-detected workspace context (see Step 4)
+   - Optional: `project_context` (string) — auto-detected workspace context (see Step 5)
    - Returns: Session metadata including `session_id` (format: `sess_v2_*`)
    - Use once per session
 
@@ -245,52 +258,46 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 ### Workflow 1: Design and Deploy a Web Application
 
 ```
-# Step 1: Start session (pass project_context if detected — see Step 4)
-convoopen(project_context="Language/Runtime: Node.js 20, TypeScript\nFramework: Next.js 14\nTarget Cloud: AWS (Terraform provider, ECS + RDS)")
-→ Riley: "Tell me about the app you're building"
+# Step 1: User describes what they want to build
+# Agent calls convoopen (with project_context if detected — see Step 5)
+# Riley introduces herself
+# Agent calls convoreply with the user's message
+User: "I need a web app with a PostgreSQL database, Redis caching, and a load balancer for about 10,000 users on AWS"
 
-# Step 2: Describe requirements (show Riley's questions to the user)
-convoreply: "I need a web app with a PostgreSQL database, Redis caching, and a load balancer for about 10,000 users on AWS"
+# Step 2: Agent forwards Riley's follow-up questions to the user (5+ rounds typical)
+User: "US East region, no compliance requirements, standard backup policy"
 
-# Step 3: Answer Riley's follow-up questions (5+ rounds typical)
-convoreply: "US East region, no compliance requirements, standard backup policy"
+# Step 3: Agent can check current state at any time
+# Agent calls convostatus → shows selected components and estimated monthly cost
 
-# Step 4: Check current state
-convostatus
-→ Shows selected components and estimated monthly cost
+# Step 4: When Riley confirms design is complete, agent calls tfgenerate
 
-# Step 5: Generate Terraform when design is complete
-tfgenerate
+# Step 5: Agent calls tfdeploy after user reviews the Terraform
 
-# Step 6: Deploy
-tfdeploy
+# Step 6: Agent monitors with tfstatus and tflogs
 
-# Step 7: Monitor
-tfstatus
-tflogs
-
-# Step 8: Verify
-awsinspect
+# Step 7: Agent verifies with awsinspect or gcpinspect
 ```
+
+**IMPORTANT:** The agent calls all tools on behalf of the user. Never tell the user to "call convoopen" or "use tfgenerate" — instead, the agent should say things like "I'll start a design session" or "I'll generate the Terraform now."
 
 ### Workflow 2: Compare Cloud Providers
 
 ```
-# Start a session and describe requirements
-convoopen
-convoreply: "I need a containerized microservices platform. What would this look like on AWS vs GCP?"
+# User describes requirements — agent calls convoopen then convoreply
+User: "I need a containerized microservices platform. What would this look like on AWS vs GCP?"
 
-# Riley will compare options (EKS vs GKE, RDS vs Cloud SQL, etc.)
-# and help you choose based on your constraints
+# Riley compares options (EKS vs GKE, RDS vs Cloud SQL, etc.)
+# Agent forwards Riley's analysis and helps the user choose
 ```
 
 ### Workflow 3: Cost-Optimized Infrastructure
 
 ```
-convoopen
-convoreply: "I need infrastructure for a startup MVP. Budget is under $200/month on AWS."
+# User states budget constraints — agent calls convoopen then convoreply
+User: "I need infrastructure for a startup MVP. Budget is under $200/month on AWS."
 
-# Riley will recommend cost-effective options:
+# Riley recommends cost-effective options:
 # - ECS Fargate instead of EKS for lower overhead
 # - Single-AZ RDS for dev/staging
 # - Smaller instance types
@@ -300,13 +307,15 @@ convoreply: "I need infrastructure for a startup MVP. Budget is under $200/month
 
 When the user says "continue", "next", "proceed", "yes", "looks good", "let's do it", or any affirmative response, **always call `convoreply`** with their message unless the phase table below indicates a different tool. Never just acknowledge the message — route it to Riley.
 
-| Current Phase | Signal | Next Action |
+| Current Phase | Signal | Agent Action |
 |---|---|---|
-| Design (before pricing) | Riley asking questions | Continue with `convoreply` |
-| Design complete | `[TERRAFORM_READY: true]` in response | Suggest `tfgenerate` |
-| Terraform generated | Files returned | Suggest `tfdeploy` |
-| Deployment started | Job running | Use `tfstatus` or `tflogs` |
-| Deployment complete | Status shows done | Use `awsinspect` or `gcpinspect` |
+| Design (before pricing) | Riley asking questions | Forward to user via `convoreply` |
+| Design complete | `[TERRAFORM_READY: true]` in response | Tell user the design is ready, call `tfgenerate` |
+| Terraform generated | Files returned | Show Terraform to user, offer to deploy via `tfdeploy` |
+| Deployment started | Job running | Monitor with `tfstatus` or `tflogs` |
+| Deployment complete | Status shows done | Verify with `awsinspect` or `gcpinspect` |
+
+**CRITICAL: Internal signals like `[TERRAFORM_READY: true]` are for agent routing only.** Never show these markers to the user. Translate them into natural language — for example, instead of saying "when you see [TERRAFORM_READY: true]", tell the user "when Riley confirms the design is complete."
 
 ## Best Practices
 
@@ -314,7 +323,7 @@ When the user says "continue", "next", "proceed", "yes", "looks good", "let's do
 
 - **Show Riley's messages to the user verbatim** — Riley's questions are meant for the human
 - **Use `convostatus`** to check progress at any time during design
-- **Wait for `[TERRAFORM_READY: true]`** before calling `tfgenerate`
+- **Wait for Riley to confirm the design is complete** (signaled internally by `[TERRAFORM_READY: true]`) before calling `tfgenerate` — do not show this marker to the user
 - **Store the `session_id`** from `convoopen` — all tools need it
 - **Let users review Terraform** before calling `tfdeploy`
 - **Be specific about requirements** — mention traffic, compliance, regions, budget
@@ -382,6 +391,11 @@ This is the most common issue. The server requires no authentication or API keys
 1. Call `tfdeploy` first to start the deployment
 2. Then use `tfstatus` or `tflogs` to monitor
 
+### Kiro prompts for approval on every tool call
+
+**Cause:** This is a [known Kiro bug](https://github.com/kirodotdev/Kiro/issues/4323) — Kiro does not currently honor the `autoApprove` field in MCP configuration.
+**Solution:** There is no workaround at this time. The user must click "Allow" for each tool the first time it's used in a session. The power ships with `autoApprove` pre-configured so that once Kiro fixes this, the conversational and monitoring tools will auto-approve automatically. Only `tfgenerate` and `tfdeploy` will require confirmation since they create or modify cloud infrastructure.
+
 ### Still stuck?
 
 If the troubleshooting steps above don't resolve the issue, or you have a feature request, direct the user to the Luther Systems team:
@@ -404,11 +418,17 @@ The `help` tool also returns up-to-date support links. When a user hits an unres
 {
   "mcpServers": {
     "insideout": {
-      "url": "https://app.platform.luthersystemsapp.com/insideout-mcp"
+      "url": "https://app.platform.luthersystemsapp.com/insideout-mcp",
+      "autoApprove": [
+        "help", "convoopen", "convoreply", "convoawait",
+        "convostatus", "tfstatus", "tflogs", "awsinspect", "gcpinspect"
+      ]
     }
   }
 }
 ```
+
+Conversational, monitoring, and inspection tools are auto-approved. `tfgenerate` and `tfdeploy` require user confirmation since they create or modify cloud infrastructure.
 
 For cloud deployments, you will need:
 - **AWS**: IAM credentials with appropriate permissions (provided during the `tfdeploy` conversation)
@@ -421,11 +441,11 @@ Riley will guide you through credential setup during the deployment phase.
 1. **Be descriptive** — "I need a scalable e-commerce platform with HIPAA compliance on AWS" gets better results than "set up some servers"
 2. **Mention your budget** — Riley optimizes recommendations based on cost constraints
 3. **Specify your cloud provider early** — saves rounds of clarifying questions
-4. **Use `convostatus` liberally** — it's a free check on your current design state
+4. **Check design state often** — call `convostatus` proactively to keep the user informed of progress
 5. **Review costs before deploying** — Riley shows estimates but real costs may vary
 6. **Start with a simple stack** — you can always add components in a follow-up session
-7. **Check deployment logs** — `tflogs` shows exactly what Terraform is doing
-8. **Inspect after deployment** — `awsinspect`/`gcpinspect` confirms what was actually provisioned
+7. **Check deployment logs** — call `tflogs` to show the user what Terraform is doing
+8. **Inspect after deployment** — call `awsinspect`/`gcpinspect` to confirm what was actually provisioned
 9. **Open your project first** — InsideOut auto-detects your tech stack and target cloud provider from workspace files, giving Riley a head start on recommendations
 
 ---

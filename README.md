@@ -69,6 +69,12 @@ MCP support must be enabled in Kiro:
 
 That's it. No API keys, no local binaries, no additional setup.
 
+### Tool Approval Prompts
+
+Kiro asks for approval before each MCP tool call. InsideOut ships with `autoApprove` configured for its safe, read-only tools, but **Kiro does not currently honor the `autoApprove` field** — this is a [known Kiro bug](https://github.com/kirodotdev/Kiro/issues/4323). Until it's fixed, you'll need to click "Allow" for each tool call the first time it's used in a session.
+
+We've pre-configured `autoApprove` in `mcp.json` so that once Kiro fixes this, the conversational and monitoring tools will auto-approve and only `tfgenerate` and `tfdeploy` (which create or modify real cloud infrastructure) will prompt for confirmation.
+
 ## Quick Start
 
 Once installed, mention anything about infrastructure, cloud, AWS, GCP, Terraform, or deployment in a Kiro chat. The power activates automatically.
