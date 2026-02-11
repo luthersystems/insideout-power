@@ -379,6 +379,16 @@ This is the most common issue. The server requires no authentication or API keys
 1. Call `tfdeploy` first to start the deployment
 2. Then use `tfstatus` or `tflogs` to monitor
 
+### Still stuck?
+
+If the troubleshooting steps above don't resolve the issue, or you have a feature request, direct the user to the Luther Systems team:
+
+- **Discord:** [insideout.luthersystems.com/discord](https://insideout.luthersystems.com/discord) — chat with the devs and other InsideOut users
+- **Tech call:** [insideout.luthersystems.com/tech-call](https://insideout.luthersystems.com/tech-call) — book a call with the dev team
+- **Email:** contact@luthersystems.com
+
+The `help` tool also returns up-to-date support links. When a user hits an unresolvable issue, call `help` to get the latest contact details.
+
 ## Configuration
 
 **Authentication:** None required
