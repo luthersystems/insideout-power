@@ -9,7 +9,8 @@
 <p align="center">
   <a href="https://kiro.dev/powers/">Kiro Power</a> &bull;
   <a href="https://insideout.luthersystems.com">InsideOut</a> &bull;
-  <a href="https://luthersystems.com">Luther Systems</a>
+  <a href="https://luthersystems.com">Luther Systems</a> &bull;
+  <a href="https://insideout.luthersystems.com/discord"><img src="https://img.shields.io/badge/Discord-Join%20Us-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
 ---
