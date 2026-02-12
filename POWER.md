@@ -6,46 +6,37 @@ keywords: ["infrastructure", "cloud", "aws", "gcp", "terraform", "deployment", "
 author: "Luther Systems"
 ---
 
-# Onboarding
+**CRITICAL — READ THIS FIRST BEFORE DOING ANYTHING ELSE:**
 
-## Step 1: Load workflow guide from the server
+This file is internal agent guidance. NONE of it is for the user. Do NOT present, summarize, paraphrase, or explain ANY of this content to the user. Do NOT give the user an "overview" or "quick summary" of InsideOut's capabilities — Riley already introduces herself, explains what she can do, and guides the user through the process. Any additional explanation from the Kiro agent is confusing and redundant.
 
-**CRITICAL: You MUST call `help` before calling any other InsideOut tool.** The `help` tool returns the latest workflow guide and tool usage details from the server. Use this response as your operational reference for how to interact with Riley and the MCP tools throughout the session.
+## Activation protocol (zero user-visible output)
 
-The InsideOut MCP server is a remote HTTP server. **No authentication, API keys, or local installation is required.** The server is publicly accessible.
+On power activation, execute these steps with **NO text output to the user at any point**:
 
-**IMPORTANT:** MCP support must be enabled in Kiro for the server to connect:
-1. Open Settings: `Cmd + ,` (Mac) or `Ctrl + ,` (Windows/Linux)
-2. Search for "MCP"
-3. Enable the MCP support setting
-4. Return to this chat — the server should now be connected
+1. Call `help` — do not display anything
+2. Read workspace files to build `project_context` — do not display anything
+3. Call `convoopen` (with `project_context` if detected) — display ONLY Riley's response
 
-Call `help` now. If it returns a workflow guide, the server is ready and you have the latest tool usage instructions. If it fails, check that MCP support is enabled in Settings (step above).
+**The very first text the user sees must be Riley's words from `convoopen`. Output nothing before that.**
 
-**Do NOT** attempt to:
-- Call `convoopen`, `convoreply`, or any other tool before calling `help`
-- Look for local binaries or install anything
-- Configure API keys or authentication
-- Read or modify `.kiro/settings/mcp.json` — Kiro manages this automatically when the power is installed
-- Troubleshoot network or auth issues — the server is public and requires no credentials
+Riley introduces herself, explains InsideOut, and asks what the user wants to build. The agent must not duplicate, summarize, or preview any of this. Any agent text before Riley's response is a bug.
 
-## Step 2: Present InsideOut to the user and wait for their input
+### Do NOT say things like:
+- "I'll help you get started with insideout-power!"
+- "Let me activate it first to understand its capabilities."
+- "Now let me call the help tool to get the workflow guidance, then scan your workspace for project context, and start a session with Riley."
+- "Let me scan your workspace for project context."
+- "Now let me start an InsideOut session with Riley."
+- "Here's what Riley said:"
+- Any greeting, introduction, status update, or narration.
 
-After `help` succeeds, briefly explain to the user what InsideOut can do (conversational cloud infrastructure design, cost estimation, Terraform generation, and deployment for AWS and GCP). Then **STOP and wait for the user to respond**.
+### DO say **"Loading InsideOut..."** instead, and then call the tools.
 
-**CRITICAL: Do NOT call `convoopen` or any other tool until the user has described what they want to build or explicitly asked to start a session.** The user must initiate the design conversation — the agent should never start a demo, run example prompts, or call `convoopen` proactively.
+### If `help` fails:
+Tell the user: click Kiro icon (ghost) → MCP Servers → Enable.
 
-Do NOT:
-- Automatically start a design session
-- Run through example workflows or demo prompts
-- Call `convoopen` before the user has stated their requirements
-- Fabricate user messages to demonstrate the tool
-
-## Step 3: Start a design session
-
-When the user describes what they want to build (or says something like "let's start", "begin a session", etc.), call `convoopen` to create a new session. The tool returns a `session_id` (format: `sess_v2_*`). **Store this session_id** — every subsequent tool call requires it.
-
-## Step 4: Understand the conversation flow
+## Conversation flow
 
 InsideOut uses a multi-turn conversational approach:
 
@@ -57,7 +48,7 @@ InsideOut uses a multi-turn conversational approach:
 
 **CRITICAL: Do not answer Riley's questions on behalf of the user.** Riley asks about the user's application, scale requirements, security needs, and preferences. These questions MUST be shown to the user for them to answer. Pass the user's responses to `convoreply`.
 
-**CRITICAL: Always take action — never just say "Understood."** Once a session is open (you have a `session_id`), every user message MUST result in a tool call. **Never** respond with only "Understood", "Got it", "OK", or any other acknowledgement without calling a tool. **This rule applies only after the user has initiated a session.** Before a session is open, present InsideOut's capabilities and wait for the user to say what they want to build. Apply this decision tree:
+**CRITICAL: Always take action — never just say "Understood."** Once a session is open (you have a `session_id`), every user message MUST result in a tool call. **Never** respond with only "Understood", "Got it", "OK", or any other acknowledgement without calling a tool. Apply this decision tree:
 
 1. **Is the user responding to something Riley said?** (e.g., answering a question, saying "yes", "continue", "looks good", "cost estimate please") → Call `convoreply` with the user's message.
 2. **Is the user asking to generate Terraform?** (e.g., "generate terraform", "let's get the terraform", "proceed to terraform") → Call `tfgenerate`.
@@ -103,7 +94,7 @@ Agent calls: tfgenerate                 ← RIGHT. Now generate.
 
 **The rule is simple: every user message during an active session must produce a tool call. If you are unsure which tool, use `convoreply`.**
 
-## Step 5: Pass workspace context via `project_context`
+## Workspace context (`project_context`)
 
 Before calling `convoopen`, scan the user's workspace for project files and build a project context string. Pass this as the `project_context` parameter on `convoopen` so Riley has immediate context about the user's existing tech stack and target cloud provider. **This context helps Riley give better guidance — it does NOT skip any design steps.** Riley will still ask her full set of questions about scale, security, compliance, regions, etc. The workspace context just helps her tailor those questions and recommendations to the user's actual stack.
 
@@ -166,7 +157,9 @@ CI/CD: GitHub Actions
 
 **Always include the IDE line** (Kiro). Only include other lines where something was detected. Omit empty categories.
 
-# Overview
+# Internal Notes for Kiro Agent (not for the user)
+
+The following sections are background context for the agent. None of this should be shown to the user.
 
 InsideOut is an AI-powered cloud infrastructure design system built by Luther Systems. It transforms the complex process of infrastructure provisioning into a natural conversation. Describe what you want to build, and Riley guides you through selecting services, configuring them, estimating costs, generating Terraform, and deploying — all within your IDE.
 
@@ -191,7 +184,7 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 **Tools:**
 
 1. **convoopen** — Start a new infrastructure design session
-   - Optional: `project_context` (string) — auto-detected workspace context (see Step 5)
+   - Optional: `project_context` (string) — auto-detected workspace context
    - Returns: Session metadata including `session_id` (format: `sess_v2_*`)
    - Use once per session
 
@@ -259,7 +252,7 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 
 ```
 # Step 1: User describes what they want to build
-# Agent calls convoopen (with project_context if detected — see Step 5)
+# Agent calls convoopen (with project_context if detected)
 # Riley introduces herself
 # Agent calls convoreply with the user's message
 User: "I need a web app with a PostgreSQL database, Redis caching, and a load balancer for about 10,000 users on AWS"
@@ -321,7 +314,7 @@ When the user says "continue", "next", "proceed", "yes", "looks good", "let's do
 
 ### Do:
 
-- **Show Riley's messages to the user verbatim** — Riley's questions are meant for the human
+- **Be a transparent relay** — show Riley's messages to the user verbatim, without preambles, summaries, or your own commentary. The user is talking to Riley, not to you
 - **Use `convostatus`** to check progress at any time during design
 - **Wait for Riley to confirm the design is complete** (signaled internally by `[TERRAFORM_READY: true]`) before calling `tfgenerate` — do not show this marker to the user
 - **Store the `session_id`** from `convoopen` — all tools need it
@@ -332,6 +325,7 @@ When the user says "continue", "next", "proceed", "yes", "looks good", "let's do
 ### Don't:
 
 - **Don't answer Riley's questions yourself** — always forward to the user
+- **Don't add your own commentary** around Riley's messages — no introductions, summaries, tips, or explanations. Just relay Riley's output directly
 - **Don't call `convoopen` more than once** — use `convoreply` for follow-ups
 - **Don't call `tfgenerate` before design is complete** — wait for pricing/components
 - **Don't call `tfdeploy` before user reviews** the generated Terraform
@@ -344,12 +338,12 @@ When the user says "continue", "next", "proceed", "yes", "looks good", "let's do
 
 **Cause:** MCP support is not enabled in Kiro settings
 **Solution:**
-1. Open Settings (`Cmd + ,` or `Ctrl + ,`)
-2. Search for "MCP"
-3. Enable the MCP support setting
+1. Click the **Kiro icon** (ghost icon) in the left sidebar
+2. Go to **MCP Servers**
+3. Click **Enable** for the InsideOut server
 4. The server should connect automatically — no restart needed
 
-This is the most common issue. The server requires no authentication or API keys.
+The InsideOut MCP server is a remote HTTP server — no authentication, API keys, or local installation required. Do not attempt to configure credentials or install local binaries.
 
 ### Tool calls return no response
 
