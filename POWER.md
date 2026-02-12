@@ -177,7 +177,7 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 
 ### insideout
 
-**Connection:** Remote HTTP server at `https://app.platform.luthersystemsapp.com/insideout-mcp`
+**Connection:** Remote HTTP server at `https://app.luthersystems.com/v1/insideout-mcp`
 **Authentication:** None required — publicly accessible
 **Transport:** Streamable HTTP (MCP over HTTP)
 
@@ -403,7 +403,7 @@ The `help` tool also returns up-to-date support links. When a user hits an unres
 ## Configuration
 
 **Authentication:** None required
-**Network:** HTTPS connection to `https://app.platform.luthersystemsapp.com/insideout-mcp`
+**Network:** HTTPS connection to `https://app.luthersystems.com/v1/insideout-mcp`
 **Prerequisites:** Kiro IDE with MCP support enabled
 
 **MCP Configuration** (automatically set by power installation):
@@ -412,7 +412,7 @@ The `help` tool also returns up-to-date support links. When a user hits an unres
 {
   "mcpServers": {
     "insideout": {
-      "url": "https://app.platform.luthersystemsapp.com/insideout-mcp",
+      "url": "https://app.luthersystems.com/v1/insideout-mcp",
       "autoApprove": [
         "help", "convoopen", "convoreply", "convoawait",
         "convostatus", "tfstatus", "tflogs", "awsinspect", "gcpinspect"

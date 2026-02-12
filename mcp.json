@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "insideout": {
-      "url": "https://app.platform.luthersystemsapp.com/insideout-mcp",
+      "url": "https://app.luthersystems.com/v1/insideout-mcp",
       "autoApprove": [
         "help",
         "convoopen",
