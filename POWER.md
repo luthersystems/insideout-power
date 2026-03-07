@@ -291,7 +291,7 @@ User: "I need a containerized microservices platform. What would this look like 
 User: "I need infrastructure for a startup MVP. Budget is under $200/month on AWS."
 
 # Riley recommends cost-effective options:
-# - ECS Fargate instead of EKS for lower overhead
+# - ECS instead of EKS for lower overhead
 # - Single-AZ RDS for dev/staging
 # - Smaller instance types
 ```

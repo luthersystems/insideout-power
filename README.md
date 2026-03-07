@@ -30,17 +30,21 @@ InsideOut is a [Kiro IDE](https://kiro.dev) power that brings AI-powered cloud i
 - **Inspect deployments** — verify what was actually provisioned in your cloud account
 - **Compare providers** — evaluate AWS vs GCP options side-by-side
 
-### Supported Services
+### Supported Services (50+)
 
-| AWS | GCP |
-|-----|-----|
-| ECS, EKS, Lambda, Fargate | Cloud Run, GKE, Cloud Functions |
-| RDS, DynamoDB, ElastiCache | Cloud SQL, Firestore, Memorystore |
-| ALB, CloudFront, Route 53 | Cloud Load Balancing, Cloud CDN |
-| S3, EFS | Cloud Storage, Filestore |
-| VPC, Security Groups | VPC, Firewall Rules |
-| CloudWatch, SNS, SQS | Cloud Monitoring, Pub/Sub |
-| And 15+ more | And 10+ more |
+| Category | AWS | GCP |
+|----------|-----|-----|
+| **Compute** | EC2, ECS, EKS, Lambda | Compute Engine, Cloud Run, GKE, Cloud Functions |
+| **Database** | RDS PostgreSQL, DynamoDB, ElastiCache, OpenSearch | Cloud SQL, Firestore, Memorystore |
+| **Networking** | VPC, ALB, CloudFront, API Gateway | VPC, Load Balancing, Cloud CDN, API Gateway |
+| **Storage** | S3 | Cloud Storage |
+| **Security** | WAF, KMS, Secrets Manager, Cognito | Cloud Armor, Cloud KMS, Secret Manager, Identity Platform |
+| **Messaging** | SQS, MSK (Kafka) | Pub/Sub |
+| **Observability** | CloudWatch, Managed Grafana | Cloud Logging, Cloud Monitoring |
+| **AI/ML** | Bedrock | Vertex AI |
+| **CI/CD** | CodePipeline, GitHub Actions | Cloud Build |
+| **Backup** | AWS Backup | GCP Backups |
+| **Third-party** | Splunk, Datadog | Splunk, Datadog |
 
 ## Installation
 
@@ -90,7 +94,7 @@ Riley: "Hi! I'm Riley, your infrastructure advisor. Tell me about the app
 
 You: "It's an e-commerce platform expecting 50k monthly users on AWS"
 
-Riley: "Great! I'd recommend ECS Fargate for your containers, RDS PostgreSQL
+Riley: "Great! I'd recommend ECS for your containers, RDS PostgreSQL
         for your database, ElastiCache Redis for sessions, and an ALB.
         Estimated cost: ~$350/month. Want me to adjust anything?"
 

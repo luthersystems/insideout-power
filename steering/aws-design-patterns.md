@@ -15,7 +15,7 @@ user data and file storage for uploads. Budget is under $200/month."
 ```
 
 **Expected Stack:**
-- **Compute:** ECS Fargate (cost-effective containers)
+- **Compute:** ECS (cost-effective containers)
 - **Database:** RDS PostgreSQL (db.t3.micro)
 - **Storage:** S3 (file uploads)
 - **Load Balancer:** ALB
