@@ -44,7 +44,6 @@ InsideOut is a [Kiro IDE](https://kiro.dev) power that brings AI-powered cloud i
 | **AI/ML** | Bedrock | Vertex AI |
 | **CI/CD** | CodePipeline, GitHub Actions | Cloud Build |
 | **Backup** | AWS Backup | GCP Backups |
-| **Third-party** | Splunk, Datadog | Splunk, Datadog |
 
 ## Installation
 
