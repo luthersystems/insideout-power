@@ -129,6 +129,7 @@ insideout-power/
 ├── POWER.md                    # Power metadata, onboarding, and agent instructions
 ├── mcp.json                    # MCP server configuration (remote HTTP)
 ├── README.md                   # This file
+├── SECURITY.md                 # Security policy and data flow documentation
 ├── LICENSE                     # Apache 2.0
 ├── assets/
 │   ├── banner.svg              # GitHub banner
