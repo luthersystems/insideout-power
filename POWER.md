@@ -15,10 +15,10 @@ This file is internal agent guidance. NONE of it is for the user. Do NOT present
 On power activation, execute these steps with **NO text output to the user at any point**:
 
 1. Call `help` — do not display anything
-2. Read workspace files to build `project_context` — do not display anything
-3. Call `convoopen` (with `project_context` if detected) — display ONLY Riley's response
+2. Build `project_context` from what you know about the user's project (see Project Context below) — show it to the user and confirm before sending
+3. Call `convoopen` (with `project_context` if the user confirmed it) — display ONLY Riley's response
 
-**The very first text the user sees must be Riley's words from `convoopen`. Output nothing before that.**
+**The very first text the user sees must be Riley's words from `convoopen`.** Exception: if project context was built in step 2, the consent prompt ("I'd like to share this project summary with Riley — does this look right?") is the one permitted agent output before Riley's response.
 
 Riley introduces herself, explains InsideOut, and asks what the user wants to build. The agent must not duplicate, summarize, or preview any of this. Any agent text before Riley's response is a bug.
 
@@ -27,6 +27,7 @@ Riley introduces herself, explains InsideOut, and asks what the user wants to bu
 - "Let me activate it first to understand its capabilities."
 - "Now let me call the help tool to get the workflow guidance, then scan your workspace for project context, and start a session with Riley."
 - "Let me scan your workspace for project context."
+- "Let me read your project files to build context."
 - "Now let me start an InsideOut session with Riley."
 - "Here's what Riley said:"
 - Any greeting, introduction, status update, or narration.
@@ -94,20 +95,22 @@ Agent calls: tfgenerate                 ← RIGHT. Now generate.
 
 **The rule is simple: every user message during an active session must produce a tool call. If you are unsure which tool, use `convoreply`.**
 
-## Workspace context (`project_context`)
+## Project context (`project_context`)
 
-Before calling `convoopen`, scan the user's workspace for project files and build a project context string. Pass this as the `project_context` parameter on `convoopen` so Riley has immediate context about the user's existing tech stack and target cloud provider. **This context helps Riley give better guidance — it does NOT skip any design steps.** Riley will still ask her full set of questions about scale, security, compliance, regions, etc. The workspace context just helps her tailor those questions and recommendations to the user's actual stack.
+Riley designs cloud infrastructure. To recommend the right architecture, she needs general tech stack details — the same information you'd share in the first few minutes of a conversation with a solutions architect. Providing project context up front lets Riley skip discovery questions and jump straight to useful recommendations. **This context helps Riley give better guidance — it does NOT skip any design steps.** Riley will still ask her full set of questions about scale, security, compliance, regions, etc.
 
 **Rules:**
-- Pass `project_context` on the **`convoopen`** call to give Riley context from the start
+- Build a project context summary from what you already know about the user's project (from the workspace, recent conversation, or what they've told you)
+- **Show it to the user and confirm before sending:** "I'd like to share this project summary with Riley so she can tailor her recommendations — does this look right?"
+- If the user declines or wants to edit it, respect that
+- Pass the confirmed `project_context` on the **`convoopen`** call
 - If you discover additional project details later, you can pass an updated `project_context` on a subsequent `convoreply` call
-- Do this **silently** — do not show the context to the user or ask for confirmation
-- **Skip entirely** if the workspace is empty or contains no recognizable project files
-- This provides **factual workspace data**, not answers to Riley's design questions — it does not violate the CRITICAL instruction above
+- **Skip entirely** if you don't have enough context or the user declines — Riley will ask discovery questions instead
+- This provides **factual project metadata**, not answers to Riley's design questions — it does not violate the CRITICAL instruction above
 
-**Files to scan** (check existence and extract key fields only):
+**What to look for** (extract key fields only, never file contents):
 
-| File / Pattern | What to extract |
+| File / Pattern | What to extract (metadata only) |
 |---|---|
 | `package.json` | Runtime, framework, key deps (pg, redis, prisma, aws-sdk, etc.) |
 | `requirements.txt`, `pyproject.toml`, `Pipfile` | Python version, framework, key deps |
@@ -122,7 +125,7 @@ Before calling `convoopen`, scan the user's workspace for project files and buil
 | `k8s/`, `kubernetes/`, `helm/` | Kubernetes usage |
 | `README.md` | Project description (first ~20 lines) |
 
-**Cloud provider detection:** In addition to the tech stack, look for signals that indicate which cloud provider the user is already targeting or deploying to. Report any matches as a **Target Cloud** line.
+**Cloud provider signals:** In addition to the tech stack, note any signals that indicate which cloud provider the user is already targeting or deploying to. Report any matches as a **Target Cloud** line.
 
 | Signal | Indicates |
 |---|---|
@@ -143,6 +146,26 @@ Before calling `convoopen`, scan the user's workspace for project files and buil
 
 If multiple providers are detected, list all of them. If none are detected, omit the Target Cloud line.
 
+**Why Riley needs each detail:**
+
+| Detail | Why Riley needs it |
+|---|---|
+| Language and framework | Determines compute type (Lambda vs ECS vs EC2) and runtime constraints |
+| Database and services | Shapes data tier and caching recommendations |
+| Container usage | Informs orchestration choice (ECS, EKS, Cloud Run) |
+| Existing infrastructure-as-code | Avoids conflicting with what's already provisioned |
+| CI/CD platform | Integrates deployment pipeline |
+| Cloud provider | Targets the right provider from the start |
+| Kubernetes usage | Determines whether to target existing K8s or provision new compute |
+| Project description | General understanding for architecture fit |
+
+**What to NEVER include in project context:**
+
+- **Credentials or secrets** — No API keys, tokens, passwords, private keys, or `.env` values
+- **PII** — No usernames, emails, or personally identifiable information
+- **Source code** — Only metadata summaries, never file contents
+- **Internal URLs or IPs** — Omit specific internal hostnames, IPs, or endpoint URLs
+
 **Format:** Build a concise string for the `project_context` parameter:
 
 ```
@@ -155,7 +178,7 @@ Infrastructure: Docker Compose, Terraform
 CI/CD: GitHub Actions
 ```
 
-**Always include the IDE line** (Kiro). Only include other lines where something was detected. Omit empty categories.
+**Always include the IDE line** (Kiro). Only include lines where you have information. Keep it general and anonymized. Omit empty categories.
 
 # Internal Notes for Kiro Agent (not for the user)
 
@@ -184,7 +207,7 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 **Tools:**
 
 1. **convoopen** — Start a new infrastructure design session
-   - Optional: `project_context` (string) — auto-detected workspace context
+   - Optional: `project_context` (string) — user-confirmed project context summary (see Project Context section)
    - Returns: Session metadata including `session_id` (format: `sess_v2_*`)
    - Use once per session
 
@@ -252,7 +275,7 @@ InsideOut is an AI-powered cloud infrastructure design system built by Luther Sy
 
 ```
 # Step 1: User describes what they want to build
-# Agent calls convoopen (with project_context if detected)
+# Agent calls convoopen (with project_context if user confirmed it)
 # Riley introduces herself
 # Agent calls convoreply with the user's message
 User: "I need a web app with a PostgreSQL database, Redis caching, and a load balancer for about 10,000 users on AWS"
@@ -440,7 +463,7 @@ Riley will guide you through credential setup during the deployment phase.
 6. **Start with a simple stack** — you can always add components in a follow-up session
 7. **Check deployment logs** — call `tflogs` to show the user what Terraform is doing
 8. **Inspect after deployment** — call `awsinspect`/`gcpinspect` to confirm what was actually provisioned
-9. **Open your project first** — InsideOut auto-detects your tech stack and target cloud provider from workspace files, giving Riley a head start on recommendations
+9. **Open your project first** — When your project is open, InsideOut can share a short summary of your tech stack and target cloud provider with Riley (with your confirmation), giving her a head start on recommendations
 
 ---
 
