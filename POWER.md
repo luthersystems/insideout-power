@@ -60,6 +60,20 @@ InsideOut uses a multi-turn conversational approach:
 
 **CRITICAL: Do not suggest spec sessions or other Kiro workflows during an InsideOut session.** Once an InsideOut session is active (you have a `session_id`), stay in the InsideOut conversation flow. Do not prompt the user to start a spec session, task session, or any other Kiro-managed workflow. The InsideOut power manages its own multi-turn workflow through the MCP tools — interrupting it with Kiro's built-in session types will break the conversation state.
 
+**Example — DO NOT do this:**
+```
+Riley: "Your stack is ready — ECS Fargate, ALB, RDS Postgres. Ready for Terraform?"
+User: "Yes, and I'd like help wiring my app up to the database too"
+Agent: "Let's switch to a spec session to plan the application changes."   ← WRONG. Never suggest spec/task sessions mid-flow.
+```
+
+**Correct:**
+```
+Riley: "Your stack is ready — ECS Fargate, ALB, RDS Postgres. Ready for Terraform?"
+User: "Yes, and I'd like help wiring my app up to the database too"
+Agent calls: convoreply(message="Yes, and I'd like help wiring my app up to the database too")   ← RIGHT. Stay in the InsideOut flow; Riley handles it.
+```
+
 **Example 1 — DO NOT do this:**
 ```
 Riley: "Any questions or tweaks? Or ready for the cost estimate?"
@@ -94,6 +108,22 @@ Agent calls: tfgenerate                 ← RIGHT. Now generate.
 ```
 
 **The rule is simple: every user message during an active session must produce a tool call. If you are unsure which tool, use `convoreply`.**
+
+**CRITICAL: On the very first deployment, do NOT call `tfdeploy` after `credawait` succeeds.** The first deployment for a project sends the user to the browser deployment console to enter cloud credentials. When they click "Apply Terraform" there, **the browser initiates the deploy itself in that connect flow** — there is no need for the agent to call `tfdeploy`. A successful `credawait` is the signal that the browser has taken over the deploy. Calling `tfdeploy` at this point fires a second job while the user is still mid-redirect, and the console auto-streams logs instead of showing the "Apply Terraform" button. This overrides the decision tree rule for the credawait→deploy sequence. After `credawait` success, call `tfstatus` once to check state, then wait for the user's next message — don't loop. Use `tflogs` once a job is running. `tfdeploy` is only for flows that never hit `credawait` (subsequent redeploys, sandbox runs).
+
+**Example — DO NOT do this:**
+```
+credawait returns: success (user finished credential entry)
+Agent calls: tfdeploy                   ← WRONG. The browser is already starting the deploy.
+```
+
+**Correct:**
+```
+credawait returns: success (user finished credential entry)
+Agent calls: tfstatus                   ← RIGHT. Browser owns the deploy; check state once.
+→ tfstatus shows running once the user clicks Apply in the browser.
+Agent calls: tflogs                     ← RIGHT. Stream logs for the running job.
+```
 
 ## Project context (`project_context`)
 
@@ -410,8 +440,29 @@ The InsideOut MCP server is a remote HTTP server — no authentication, API keys
 
 ### Kiro prompts for approval on every tool call
 
-**Cause:** This is a [known Kiro bug](https://github.com/kirodotdev/Kiro/issues/4323) — Kiro does not currently honor the `autoApprove` field in MCP configuration.
-**Solution:** There is no workaround at this time. The user must click "Allow" for each tool the first time it's used in a session. The power ships with `autoApprove` pre-configured so that once Kiro fixes this, the conversational and monitoring tools will auto-approve automatically. Only `tfgenerate` and `tfdeploy` will require confirmation since they create or modify cloud infrastructure.
+**Cause:** Kiro IDE does not pre-seed `autoApprove` from a Power's shipped `mcp.json` on install. The user must click "Allow" once per tool; Kiro persists each approval into `~/.kiro/settings/mcp.json` under `powers.mcpServers["power-insideout-insideout"].autoApprove`. There is no "trust all" option yet ([kirodotdev/Kiro#4672](https://github.com/kirodotdev/Kiro/issues/4672)), and the `"*"` wildcard is ignored ([kirodotdev/Kiro#4323](https://github.com/kirodotdev/Kiro/issues/4323)).
+
+**Solution — click-once path:** Just click "Allow" the first time each tool runs. Kiro persists the approval automatically, and subsequent calls in this and future sessions are auto-approved.
+
+**Solution — pre-approve all at once:** After installing the Power, open `~/.kiro/settings/mcp.json` and ensure the block below exists, then restart Kiro. The Power must be installed first — if the `power-insideout-insideout` key is missing, Kiro may overwrite it on install.
+
+```json
+{
+  "powers": {
+    "mcpServers": {
+      "power-insideout-insideout": {
+        "autoApprove": [
+          "help", "convoopen", "convoreply", "convoawait",
+          "convostatus", "credawait", "tfstatus", "tflogs",
+          "awsinspect", "gcpinspect"
+        ]
+      }
+    }
+  }
+}
+```
+
+`tfgenerate` and `tfdeploy` are intentionally omitted — they create or modify cloud infrastructure and should require explicit confirmation. Kiro CLI ignores `autoApprove` entirely; this guidance applies to Kiro IDE only.
 
 ### Still stuck?
 
@@ -438,7 +489,8 @@ The `help` tool also returns up-to-date support links. When a user hits an unres
       "url": "https://app.luthersystems.com/v1/insideout-mcp",
       "autoApprove": [
         "help", "convoopen", "convoreply", "convoawait",
-        "convostatus", "tfstatus", "tflogs", "awsinspect", "gcpinspect"
+        "convostatus", "credawait", "tfstatus", "tflogs",
+        "awsinspect", "gcpinspect"
       ]
     }
   }

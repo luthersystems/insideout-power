@@ -8,6 +8,7 @@
         "convoreply",
         "convoawait",
         "convostatus",
+        "credawait",
         "tfstatus",
         "tflogs",
         "awsinspect",
