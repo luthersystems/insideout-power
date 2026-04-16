@@ -109,19 +109,19 @@ Agent calls: tfgenerate                 ← RIGHT. Now generate.
 
 **The rule is simple: every user message during an active session must produce a tool call. If you are unsure which tool, use `convoreply`.**
 
-**CRITICAL: After `credawait` succeeds, do NOT call `tfdeploy`.** When `credawait` returns success, the user has finished entering cloud credentials in the browser and is being redirected to the deployment console. The user must click "Apply Terraform" themselves to start the Terraform job. If the agent calls `tfdeploy` at this point, the job starts while the user is still mid-redirect and the console auto-streams logs instead of showing the "Apply Terraform" button. Poll with `tfstatus` to detect when the user has clicked Apply, then use `tflogs` once a job is running. `tfdeploy` remains valid for flows that do not involve `credawait` (first-time deploys with existing credentials, redeploys, sandbox runs).
+**CRITICAL: On the very first deployment, do NOT call `tfdeploy` after `credawait` succeeds.** The first deployment for a project sends the user to the browser deployment console to enter cloud credentials. When they click "Apply Terraform" there, **the browser initiates the deploy itself** — there is no need for the agent to call `tfdeploy`. A successful `credawait` is the signal that the browser has taken over the deploy. Calling `tfdeploy` at this point fires a second job while the user is still mid-redirect, and the console auto-streams logs instead of showing the "Apply Terraform" button. This overrides the decision tree rule for the credawait→deploy sequence. After `credawait` success, call `tfstatus` once to check state, then wait for the user's next message — don't loop. Use `tflogs` once a job is running. `tfdeploy` is only for flows that never hit `credawait` (subsequent redeploys, sandbox runs).
 
 **Example — DO NOT do this:**
 ```
 credawait returns: success (user finished credential entry)
-Agent calls: tfdeploy                   ← WRONG. Job starts before user lands on the console.
+Agent calls: tfdeploy                   ← WRONG. The browser is already starting the deploy.
 ```
 
 **Correct:**
 ```
 credawait returns: success (user finished credential entry)
-Agent calls: tfstatus                   ← RIGHT. Wait for the user to click "Apply Terraform".
-→ tfstatus shows running once the user clicks.
+Agent calls: tfstatus                   ← RIGHT. Browser owns the deploy; check state once.
+→ tfstatus shows running once the user clicks Apply in the browser.
 Agent calls: tflogs                     ← RIGHT. Stream logs for the running job.
 ```
 
