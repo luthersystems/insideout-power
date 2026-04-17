@@ -16,7 +16,7 @@ On power activation, execute these steps with **NO text output to the user at an
 
 1. Call `help` — do not display anything
 2. Build `project_context` from what you know about the user's project (see Project Context below) — show it to the user and confirm before sending
-3. Call `convoopen` (with `project_context` if the user confirmed it) — display ONLY Riley's response
+3. **Immediately after the user confirms (or declines) the project context, call `convoopen`** (with `project_context` if confirmed, without it if declined) — display ONLY Riley's response. Do not pause, do not ask another question, do not add any acknowledgement text. The user's confirmation is the trigger to call `convoopen` right away.
 
 **The very first text the user sees must be Riley's words from `convoopen`.** Exception: if project context was built in step 2, the consent prompt ("I'd like to share this project summary with Riley — does this look right?") is the one permitted agent output before Riley's response.
 
@@ -123,6 +123,41 @@ credawait returns: success (user finished credential entry)
 Agent calls: tfstatus                   ← RIGHT. Browser owns the deploy; check state once.
 → tfstatus shows running once the user clicks Apply in the browser.
 Agent calls: tflogs                     ← RIGHT. Stream logs for the running job.
+```
+
+### Credential flow: `credawait` timeouts and errors are NOT service failures
+
+The browser sign-up + cloud credential flow (AWS role creation, subscription, account setup) commonly takes **5–15+ minutes**, well beyond any single `credawait` call. Handle this correctly:
+
+- **`credawait` default timeout is 5 minutes (300s).** A timeout means the user is still mid-flow, **not** that the service is broken.
+- **On `credawait` timeout or transient error, do NOT abandon the flow.** Do NOT call `tfstatus`, do NOT say "the service is experiencing issues," and do NOT switch to troubleshooting. Instead:
+  1. Ask the user directly: **"Were you able to sign up, add your cloud credentials, and kick off the deployment in the browser? Or do you need more time?"**
+  2. If the user needs more time → call `credawait` again to keep polling.
+  3. If the user says they finished and clicked Apply → call `tfstatus` to pick up the browser-initiated job.
+  4. If the user hit a problem in the browser → re-present the connect URL and offer to call `credawait` again.
+- **Never interpret a credawait timeout as "service down."** The connect URL is still valid; the user is simply still in the browser.
+- **Never fabricate progress updates or guess what happened.** Ask the user.
+
+**Example — DO NOT do this:**
+```
+credawait returns: timeout after 5 min (or a transient network error)
+Agent: "There's a temporary connection issue with the InsideOut service. Let me check the status."
+Agent calls: tfstatus                   ← WRONG. The service is fine. The user is still signing up.
+```
+
+**Correct:**
+```
+credawait returns: timeout after 5 min
+Agent: "Were you able to sign up, add your cloud credentials, and kick off the deployment in the browser? Or do you need more time?"
+User: "Still working on it, AWS is validating my credentials."
+Agent calls: credawait                  ← RIGHT. Keep polling.
+```
+
+```
+credawait returns: timeout after 5 min
+Agent: "Were you able to sign up, add your cloud credentials, and kick off the deployment in the browser? Or do you need more time?"
+User: "Yes, I clicked Apply Terraform a minute ago."
+Agent calls: tfstatus                   ← RIGHT. Browser-initiated deploy is running.
 ```
 
 ## Project context (`project_context`)
