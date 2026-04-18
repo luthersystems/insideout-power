@@ -30,7 +30,18 @@ Riley introduces herself, explains InsideOut, and asks what the user wants to bu
 - "Let me read your project files to build context."
 - "Now let me start an InsideOut session with Riley."
 - "Here's what Riley said:"
+- "Hi, I'm Riley..." / "I'm Riley, your AI infrastructure advisor..." / any first-person text attributed to Riley that you authored yourself.
 - Any greeting, introduction, status update, or narration.
+
+### CRITICAL: Never speak as Riley
+
+Riley's words come **only** from the tool output of `convoopen` and `convoreply`. Never author first-person text in Riley's voice ("Hi, I'm Riley...", "I can help you design...", "Tell me about the app you're building"), even as a placeholder while a tool call is in flight or as a friendly intro before the first response arrives.
+
+- If you haven't called `convoopen` yet → you have no Riley content. Call the tool first; show nothing until it returns.
+- If `convoopen` is running → wait for it. Do not fill the silence with fabricated Riley dialogue.
+- If `convoopen` returned → show Riley's actual words verbatim, without rewriting, paraphrasing, or "improving" them.
+
+Writing words and putting them in Riley's mouth is a bug. Users trust Riley's output as the product's voice — fabricated dialogue breaks that trust and can give the user incorrect guidance.
 
 ### DO say **"Loading InsideOut..."** instead, and then call the tools.
 
@@ -414,6 +425,7 @@ When the user says "continue", "next", "proceed", "yes", "looks good", "let's do
 
 - **Don't answer Riley's questions yourself** — always forward to the user
 - **Don't add your own commentary** around Riley's messages — no introductions, summaries, tips, or explanations. Just relay Riley's output directly
+- **Don't speak as Riley** — never author first-person text in Riley's voice. Riley's words come only from `convoopen` / `convoreply` tool output. See the "Never speak as Riley" section above.
 - **Don't call `convoopen` more than once** — use `convoreply` for follow-ups
 - **Don't call `tfgenerate` before design is complete** — wait for pricing/components
 - **Don't call `tfdeploy` before user reviews** the generated Terraform
@@ -421,6 +433,19 @@ When the user says "continue", "next", "proceed", "yes", "looks good", "let's do
 - **Don't use `convoreply` when user asks for Terraform** — use `tfgenerate` instead
 
 ## Troubleshooting
+
+### Kiro keeps replying "Understood" and not calling tools — stuck in Spec mode
+
+**Cause:** The user is in a **Spec session**, not a **Vibe session**. Spec mode is Kiro's structured planning flow — it generates `requirements.md`, `design.md`, and `tasks.md` instead of making live tool calls. InsideOut's conversational flow (Riley ↔ user via `convoreply`) does not fit Spec mode and will fail silently, often with repeated "Understood" responses and no MCP tool calls firing.
+
+**How to detect:** Agent responses include phrases like "Understood", "Got it", "Let me plan that out", or reference creating/updating `requirements.md` / `design.md` / `tasks.md`, and **no MCP tool calls are being made** despite an active InsideOut session.
+
+**Solution — tell the user:**
+1. Start a **new session** using the session picker (or the `+` button in the chat pane).
+2. Choose **Vibe** (not Spec). Vibe mode is the fluid, iterative chat mode InsideOut is designed for.
+3. In the new Vibe session, re-activate InsideOut (the power will call `help` → `convoopen` and hand off to Riley).
+
+InsideOut manages its own multi-turn workflow through MCP tools. Spec mode's up-front planning paradigm conflicts with that — always use Vibe sessions for InsideOut.
 
 ### MCP server shows "not connected"
 
