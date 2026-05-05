@@ -1,0 +1,60 @@
+# Smithery listing configuration for InsideOut (Riley)
+# Docs: https://smithery.ai/docs/config/smithery-yaml
+# Submit via: https://smithery.ai/submit
+
+name: insideout-power
+displayName: InsideOut — Riley Infrastructure Agent
+description: >
+  AI infrastructure design agent by Luther Systems. Describe your app in plain
+  English and Riley designs a production-ready cloud architecture, generates
+  Terraform, estimates monthly costs, and deploys to AWS or GCP — all
+  conversationally, without leaving your IDE.
+homepage: https://insideout.luthersystems.com
+repository: https://github.com/luthersystems/insideout-power
+license: Apache-2.0
+author:
+  name: Luther Systems
+  url: https://luthersystems.com
+  email: Sam.Wood@luthersystems.com
+
+categories:
+  - infrastructure
+  - devops
+  - cloud
+  - terraform
+  - aws
+  - gcp
+
+tags:
+  - infrastructure-as-code
+  - terraform
+  - aws
+  - gcp
+  - cloud-deployment
+  - devops-automation
+  - ai-infrastructure
+  - cost-estimation
+
+startCommand:
+  type: http
+  url: https://app.luthersystems.com/v1/insideout-mcp
+
+tools:
+  - name: help
+    description: Returns the full workflow guide and tool chaining instructions for designing and deploying infrastructure with Riley.
+  - name: convoopen
+    description: Opens a new infrastructure design session with Riley. Start here — describe your app and Riley will walk you through architecture, pricing, and deployment.
+  - name: tfdeploy
+    description: Deploys the generated Terraform configuration to AWS or GCP. Requires cloud credentials to be connected.
+  - name: tfstatus
+    description: Returns current deployment status, progress logs, and connection details for deployed infrastructure.
+
+examples:
+  - title: Design a web app stack
+    prompt: "I need to deploy a web app with a Postgres database, user authentication, and file uploads on AWS. What should my infrastructure look like?"
+  - title: Serverless API
+    prompt: "Build me a serverless API on AWS with a NoSQL database, optimised for low fixed monthly cost."
+  - title: Check deployment status
+    prompt: "What's the status of my deployment and what are my database connection details?"
+  - title: Cost estimate
+    prompt: "Give me a full cost breakdown of my current stack."

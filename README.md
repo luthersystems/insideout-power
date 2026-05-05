@@ -1,191 +1,201 @@
-<p align="center">
-  <img src="assets/banner.svg" alt="InsideOut — AI-Powered Cloud Infrastructure Design" width="100%">
-</p>
+# InsideOut — AI Infrastructure Design Agent
 
-<p align="center">
-  <strong>Design, price, and deploy production-ready AWS & GCP infrastructure through conversational AI</strong>
-</p>
+**Design, price, and deploy production-ready cloud infrastructure through conversational AI.**
 
-<p align="center">
-  <a href="https://kiro.dev/powers/">Kiro Power</a> &bull;
-  <a href="https://insideout.luthersystems.com">InsideOut</a> &bull;
-  <a href="https://luthersystems.com">Luther Systems</a> &bull;
-  <a href="https://insideout.luthersystems.com/discord"><img src="https://img.shields.io/badge/Discord-Join%20Us-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
-</p>
+Riley, InsideOut's AI infrastructure advisor, takes a plain English description of your app and designs a complete AWS or GCP architecture, generates Terraform, estimates monthly costs, and deploys — all without leaving your IDE.
+
+> 🎬 **[Watch the demo →](https://insideout.luthersystems.com)** <!-- TODO: add direct video link from Dario -->
 
 ---
 
-## What is InsideOut?
+## How do I deploy cloud infrastructure with AI?
 
-InsideOut is a [Kiro IDE](https://kiro.dev) power that brings AI-powered cloud infrastructure design directly into your editor. Describe what you want to build in plain language, and Riley — your AI infrastructure advisor — guides you through selecting services, configuring them, estimating costs, generating Terraform, and deploying to AWS or GCP.
+Describe your app to Riley in plain English. Riley handles everything else:
 
-**No authentication or API keys required.** Install the power and start designing.
+1. **Design** — Riley suggests the right components for each feature of your app
+2. **Review** — walk through the architecture, ask questions, request changes
+3. **Price** — get a monthly cost estimate broken down by component before committing
+4. **Configure** — tweak scale, region, and cost strategy
+5. **Generate** — Riley produces modular, production-ready Terraform files
+6. **Deploy** — connect your cloud credentials and Riley applies the Terraform (10–30 min)
+7. **Manage** — inspect resources, check deployment status, update or tear down — all conversationally
 
-### What You Can Do
+No Terraform knowledge required. No DevOps expertise required.
 
-- **Design infrastructure conversationally** — describe your app, get expert recommendations
-- **Get real-time cost estimates** — see monthly costs as components are added
-- **Generate Terraform** — production-ready, modular code with security best practices
-- **Deploy with one command** — deploy directly to AWS or GCP from the conversation
-- **Inspect deployments** — verify what was actually provisioned in your cloud account
-- **Compare providers** — evaluate AWS vs GCP options side-by-side
+---
 
-### Supported Services (50+)
+## Install
 
-| Category | AWS | GCP |
-|----------|-----|-----|
-| **Compute** | EC2, ECS, EKS, Lambda | Compute Engine, Cloud Run, GKE, Cloud Functions |
-| **Database** | RDS PostgreSQL, DynamoDB, ElastiCache, OpenSearch | Cloud SQL, Firestore, Memorystore |
-| **Networking** | VPC, ALB, CloudFront, API Gateway | VPC, Load Balancing, Cloud CDN, API Gateway |
-| **Storage** | S3 | Cloud Storage |
-| **Security** | WAF, KMS, Secrets Manager, Cognito | Cloud Armor, Cloud KMS, Secret Manager, Identity Platform |
-| **Messaging** | SQS, MSK (Kafka) | Pub/Sub |
-| **Observability** | CloudWatch, Managed Grafana | Cloud Logging, Cloud Monitoring |
-| **AI/ML** | Bedrock | Vertex AI |
-| **CI/CD** | CodePipeline, GitHub Actions | Cloud Build |
-| **Backup** | AWS Backup | GCP Backups |
+### Kiro IDE
 
-## Installation
+Install the `insideout-power` plugin from the Kiro powers marketplace, or add directly from this repo (`luthersystems/insideout-power`) via Kiro's Powers panel. MCP must be enabled in settings. No API keys required.
 
-### From GitHub (recommended)
+### Cursor
 
-1. Open Kiro IDE
-2. Open the Powers panel
-3. Click **Add power from GitHub**
-4. Enter: `luthersystems/insideout-power`
+Full instructions: **https://insideout.luthersystems.com/cursor**
 
-### From Local Path (for development)
+Add to your Cursor MCP config:
 
-1. Clone this repo: `git clone https://github.com/luthersystems/insideout-power.git`
-2. Open Kiro IDE
-3. Open the Powers panel
-4. Click **Add power from Local Path**
-5. Select the cloned directory
-
-### After Installation
-
-MCP support must be enabled in Kiro:
-
-1. Open Settings (`Cmd + ,` / `Ctrl + ,`)
-2. Search for "MCP"
-3. Enable the MCP support setting
-
-That's it. No API keys, no local binaries, no additional setup.
-
-### Tool Approval Prompts
-
-Kiro asks for approval before each MCP tool call. InsideOut ships with `autoApprove` configured for its safe, read-only tools, but **Kiro does not currently honor the `autoApprove` field** — this is a [known Kiro bug](https://github.com/kirodotdev/Kiro/issues/4323). Until it's fixed, you'll need to click "Allow" for each tool call the first time it's used in a session.
-
-We've pre-configured `autoApprove` in `mcp.json` so that once Kiro fixes this, the conversational and monitoring tools will auto-approve and only `tfgenerate` and `tfdeploy` (which create or modify real cloud infrastructure) will prompt for confirmation.
-
-## Quick Start
-
-Once installed, mention anything about infrastructure, cloud, AWS, GCP, Terraform, or deployment in a Kiro chat. The power activates automatically.
-
-```
-You: "I need to set up cloud infrastructure for a web app"
-
-Kiro: [Activates InsideOut power, calls convoopen]
-
-Riley: "Hi! I'm Riley, your infrastructure advisor. Tell me about the app
-        you're building — what does it do, who uses it, and what scale
-        are you planning for?"
-
-You: "It's an e-commerce platform expecting 50k monthly users on AWS"
-
-Riley: "Great! I'd recommend ECS for your containers, RDS PostgreSQL
-        for your database, ElastiCache Redis for sessions, and an ALB.
-        Estimated cost: ~$350/month. Want me to adjust anything?"
-
-You: "Looks good, generate the Terraform"
-
-Kiro: [Calls tfgenerate — downloads production-ready Terraform files]
-
-You: "Deploy it"
-
-Kiro: [Calls tfdeploy — deploys to AWS, streams logs via tflogs]
+```json
+{
+  "mcpServers": {
+    "insideout": {
+      "url": "https://app.luthersystems.com/v1/insideout-mcp"
+    }
+  }
+}
 ```
 
-## Available Tools
+### Claude Code
 
-| Tool | Description |
-|------|-------------|
-| `convoopen` | Start a new infrastructure design session |
-| `convoreply` | Continue the design conversation with Riley |
-| `convoawait` | Wait for long-running operations |
-| `convostatus` | View current components, config, and pricing |
-| `tfgenerate` | Generate production-ready Terraform files |
-| `tfdeploy` | Deploy generated Terraform to AWS or GCP |
-| `tfstatus` | Check deployment progress |
-| `tflogs` | Stream real-time deployment logs |
-| `awsinspect` | Inspect deployed AWS resources |
-| `gcpinspect` | Inspect deployed GCP resources |
-| `help` | Get workflow guidance |
+Full instructions: **https://insideout.luthersystems.com/claude-code**
 
-## Directory Structure
+```bash
+# Add the marketplace
+/plugin marketplace add luthersystems/insideout-claude-code
 
-```
-insideout-power/
-├── POWER.md                    # Power metadata, onboarding, and agent instructions
-├── mcp.json                    # MCP server configuration (remote HTTP)
-├── README.md                   # This file
-├── SECURITY.md                 # Security policy and data flow documentation
-├── LICENSE                     # Apache 2.0
-├── assets/
-│   ├── banner.svg              # GitHub banner
-│   └── logo.svg                # InsideOut logo
-└── steering/                   # Workflow-specific guidance for the agent
-    ├── getting-started.md      # First-time setup walkthrough
-    ├── aws-design-patterns.md  # AWS architecture patterns and prompts
-    ├── gcp-design-patterns.md  # GCP architecture patterns and prompts
-    └── troubleshooting-guide.md
+# Install the plugin
+/plugin install insideout
+
+# Start building
+/insideout
 ```
 
-## How It Works
+### Agent Skills (Codex, Windsurf, Antigravity, and 30+ tools)
 
-InsideOut uses a multi-agent AI system behind a single MCP server:
+```bash
+npx skills add insideout
+```
 
-| Agent | Role |
-|-------|------|
-| **Riley** | Infrastructure advisor — leads the design conversation |
-| **Hippo** | Cost estimation and pricing optimization |
-| **Joy** | User experience and requirement gathering |
-| **Etch** | Terraform code generation |
-| **Core** | Architecture validation and best practices |
-| **Axel** | Deployment orchestration |
+### Any MCP-compatible agent
 
-The conversation flows through these agents automatically. From Kiro's perspective, you're talking to Riley — the other agents work behind the scenes.
+Connect directly to the MCP server:
 
-## Contributing
+```
+https://app.luthersystems.com/v1/insideout-mcp
+```
 
-1. Fork this repository
-2. Create a feature branch: `git checkout -b feature/my-improvement`
-3. Make your changes
-4. Test locally: Install the power from local path in Kiro
-5. Submit a pull request
+### Docker
 
-### Development Tips
+```bash
+docker run -i luthersystems/insideout-mcp
+```
 
-- Test POWER.md changes by reinstalling the power from local path
-- Verify MCP connectivity with the `help` tool after changes
-- Steering files are loaded on-demand — test each workflow independently
+Or in your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "insideout": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "luthersystems/insideout-mcp:latest"]
+    }
+  }
+}
+```
+
+---
+
+## What can Riley design?
+
+Riley supports 50+ services across AWS and GCP:
+
+| Cloud | Components |
+|-------|-----------|
+| **AWS** | VPC, ALB, ECS, EKS, RDS, ElastiCache, CloudFront, S3, Route53, ACM, WAF, SES, Lambda, API Gateway, DynamoDB, Cognito, Bedrock, OpenSearch, SQS |
+| **GCP** | VPC, Cloud Run, GKE, Cloud SQL, Memorystore, Cloud CDN, Cloud Storage, Cloud DNS |
+
+No regional limitations.
+
+---
+
+## Example conversations
+
+**"I'm building an AI-powered note-taking app on AWS"**
+→ Riley designs: S3 + DynamoDB (storage), Lambda + API Gateway (compute), Cognito (auth), Bedrock + OpenSearch + SQS (AI layer), CloudFront (delivery). Monthly estimate: ~$130.
+
+**"I need an indie film streaming app with S3 for storage"**
+→ Riley designs: S3 + CloudFront (video delivery), DynamoDB + Lambda (metadata), API Gateway, Cognito (auth), WAF (security). Monthly estimate: ~$120.
+
+**"Build me a serverless API with a NoSQL database, keep fixed costs low"**
+→ Riley picks on-demand DynamoDB, Lambda, API Gateway. No idle cost. Configures for your traffic estimate.
+
+---
+
+## Frequently asked questions
+
+**Does InsideOut work with Cursor, Claude Code, and Kiro?**
+Yes. InsideOut has native plugins for Kiro, Claude Code, and Cursor. It also works with any MCP-compatible agent via the MCP server endpoint, and with 30+ agentic tools via Agent Skills.
+
+**Do I need to know Terraform to use InsideOut?**
+No. Riley generates all Terraform for you. You can review the files before deploying, but no Terraform knowledge is required.
+
+**How does InsideOut estimate costs?**
+Riley calculates a monthly cost estimate broken down by component and fixed/variable split before any deployment. You can adjust scale, region, and configuration to hit your budget.
+
+**What cloud credentials do I need?**
+Design, review, and pricing require no credentials at all. You only need to connect your AWS IAM role or GCP service account at deployment time.
+
+**Can another AI agent call Riley?**
+Yes. Any MCP-compatible agent can connect to `https://app.luthersystems.com/v1/insideout-mcp`. Riley supports both multi-turn conversational sessions and single-call transactional mode for orchestration agents that don't maintain long-running sessions.
+
+**How long does deployment take?**
+Typically 10–30 minutes depending on the stack.
+
+**What if I want to change my infrastructure after deployment?**
+Riley can inspect your live resources, update configuration, and re-deploy. You can also tear down specific resources or the full stack conversationally.
+
+**Is InsideOut open source?**
+The IDE plugins and Agent Skills packages are open source under Apache 2.0. The InsideOut backend is proprietary.
+
+---
+
+## For AI agents
+
+InsideOut is designed to be called by other agents. See [AGENTS.md](./AGENTS.md) for the full integration guide.
+
+**Quick start for agents:**
+
+```
+MCP endpoint: https://app.luthersystems.com/v1/insideout-mcp
+
+1. help        → get workflow guide
+2. convoopen   → start infrastructure design session
+3. tfdeploy    → deploy to cloud
+4. tfstatus    → check progress, get connection details
+```
+
+Agent card: `https://insideout.luthersystems.com/.well-known/agent-card.json`
+llms.txt: `https://insideout.luthersystems.com/llms.txt`
+
+---
+
+## Repos
+
+| Repo | What it is |
+|------|-----------|
+| [luthersystems/insideout-power](https://github.com/luthersystems/insideout-power) | Kiro IDE "power" plugin — surfaces InsideOut inside Kiro via MCP |
+| [luthersystems/insideout-claude-code](https://github.com/luthersystems/insideout-claude-code) | Claude Code plugin — MCP tools and `/insideout` slash commands |
+| [luthersystems/insideout-agent-skills](https://github.com/luthersystems/insideout-agent-skills) | Agent Skills package — brings InsideOut to Codex, Cursor, Windsurf, Antigravity, and 30+ tools |
+| [luthersystems/insideout-terraform-presets](https://github.com/luthersystems/insideout-terraform-presets) | Standard AWS/GCP Terraform module library used by the InsideOut backend |
+| [luthersystems/insideout-examples](https://github.com/luthersystems/insideout-examples) | Sample app stacks (cargofit, edubot, guestbook, videostreaming, and more) |
+
+---
+
+## Pricing
+
+InsideOut has unit/tier-based pricing with no usage limits. See **https://insideout.luthersystems.com/pricing**.
+
+---
+
+## Community & support
+
+- 💬 Discord: **https://insideout.luthersystems.com/discord**
+- 🌐 Website: **https://insideout.luthersystems.com**
+- 🏢 Luther Systems: **https://luthersystems.com**
+
+---
 
 ## License
 
-[Apache License 2.0](LICENSE)
-
-## Links
-
-- [InsideOut Platform](https://insideout.luthersystems.com)
-- [Demo Video](https://insideout.luthersystems.com/demo-video)
-- [Standalone Web App](https://insideout.luthersystemsapp.com/) — try InsideOut without Kiro
-- [Luther Systems](https://luthersystems.com)
-- [Kiro IDE](https://kiro.dev)
-- [Kiro Powers Documentation](https://kiro.dev/docs/powers/)
-- [MCP Protocol](https://modelcontextprotocol.io)
-
-## Community & Support
-
-- [Discord](https://insideout.luthersystems.com/discord) — chat with the devs and InsideOut users
-- [General Inquiry Call](https://insideout.luthersystems.com/general-call) — talk with us
-- [Tech Call](https://insideout.luthersystems.com/tech-call) — talk with the devs
+The plugins in this repository are open source under the [Apache 2.0 License](./LICENSE).
