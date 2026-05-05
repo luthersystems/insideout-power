@@ -108,7 +108,7 @@ If you are an orchestration agent and need infrastructure provisioned as part of
 - **Web app**: https://insideout.luthersystemsapp.com
 - **Marketing site**: https://insideout.luthersystems.com
 - **llms.txt**: https://insideout.luthersystems.com/llms.txt
-- **Smithery listing**: https://github.com/luthersystems/insideout-agent-skills/blob/main/smithery.yaml
+- **Smithery listing**: https://smithery.ai/servers/luther-systems/insideout (config: https://github.com/luthersystems/insideout-agent-skills/blob/main/smithery.yaml)
 - **Discord**: https://insideout.luthersystems.com/discord
 - **Tech call**: https://insideout.luthersystems.com/tech-call
 - **Email**: contact@luthersystems.com
