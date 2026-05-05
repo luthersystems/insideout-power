@@ -13,10 +13,26 @@ Riley is the AI infrastructure design agent built by Luther Systems. If you are 
 
 ## How to Invoke Riley
 
-### Via MCP (preferred for AI agents)
+### Via remote MCP (preferred — use this first)
+
+Riley runs as a hosted MCP server. Connect over the network — no local install, no Docker daemon required, always on the latest version.
 
 ```
-endpoint: https://app.luthersystems.com/v1/insideout-mcp
+endpoint:  https://app.luthersystems.com/v1/insideout-mcp
+transport: streamable-http (also speaks SSE)
+auth:      none for design / pricing; per-session token issued by convoopen
+```
+
+Drop-in MCP client config (Cursor / Claude Desktop / Kiro / Windsurf / any MCP-compatible agent):
+
+```json
+{
+  "mcpServers": {
+    "insideout": {
+      "url": "https://app.luthersystems.com/v1/insideout-mcp"
+    }
+  }
+}
 ```
 
 **Recommended tool call sequence:**
@@ -27,13 +43,13 @@ endpoint: https://app.luthersystems.com/v1/insideout-mcp
 4. Call `tfdeploy` — deploys generated Terraform to the target cloud
 5. Call `tfstatus` — checks deployment progress and returns connection details
 
-### Via Docker
+### Via Docker (fallback for stdio-only clients or air-gapped environments)
 
-```bash
-docker run -i luthersystems/insideout-mcp
-```
+Use the remote endpoint above whenever your client supports HTTP/SSE transports — it's faster, has no local resource cost, and stays in sync with the latest server. Reach for Docker only when:
 
-Or in your MCP config:
+- Your MCP client is stdio-only (older builds of some IDEs)
+- You need to run against a non-prod backend (`-e INSIDEOUT_BASE_URL=...`)
+- Network egress to the hosted endpoint is blocked
 
 ```json
 {
@@ -45,6 +61,8 @@ Or in your MCP config:
   }
 }
 ```
+
+The Docker image is the same Go binary that powers the hosted endpoint, just talking stdio→HTTP back to the hosted InsideOut backend. Tool surface and behavior are identical to the remote endpoint.
 
 ### Via Agent Skills
 
