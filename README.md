@@ -174,6 +174,10 @@ The conversation flows through these agents automatically. From Kiro's perspecti
 
 [Apache License 2.0](LICENSE)
 
+## Related Projects
+
+- [insideout-terraform-presets](https://github.com/luthersystems/insideout-terraform-presets) — the Terraform module library that InsideOut composes into your stack. Etch builds the Terraform it generates from these presets, so read them to see what a deploy creates.
+
 ## Links
 
 - [InsideOut Platform](https://insideout.luthersystems.com)
