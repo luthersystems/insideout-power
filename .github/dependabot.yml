@@ -1,0 +1,15 @@
+# Dependabot version updates (the quality gate audit of 2026-11-18). Every
+# ecosystem is grouped into one PR a month so the updates stay reviewable
+# with little noise. Dependabot security updates are a separate repository
+# setting, which this file does not change.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
